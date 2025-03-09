@@ -45,6 +45,8 @@ set(DESKFLOW_VERSION_MINOR 27)
 set(DESKFLOW_VERSION_PATCH 0)
 set(DESKFLOW_VERSION_TWEAK 0)
 
+set(CMAKE_PREFIX_PATH "~/Applications/Qt/6.8.2/gcc_64/")
+
 # Get the version from git if it's a git repository
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/.git)
   find_package(Git)

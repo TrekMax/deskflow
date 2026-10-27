@@ -8,7 +8,7 @@ Expand-Archive $archive[0].FullName -DestinationPath $root -Force
 $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot;$env:SystemRoot\System32\Wbem"
 Remove-Item Env:QT_PLUGIN_PATH -ErrorAction SilentlyContinue
 Remove-Item Env:QML2_IMPORT_PATH -ErrorAction SilentlyContinue
-$env:QT_QPA_PLATFORM = 'offscreen'
+Remove-Item Env:QT_QPA_PLATFORM -ErrorAction SilentlyContinue
 $core = Get-ChildItem $root -Recurse -Filter deskflow-core.exe | Select-Object -First 1
 if (!$core) { throw 'Portable core executable missing' }
 & $core.FullName --version

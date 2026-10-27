@@ -27,7 +27,7 @@ runs:
           unset QT_PLUGIN_PATH QML2_IMPORT_PATH DYLD_LIBRARY_PATH DYLD_FRAMEWORK_PATH
           codesign --verify --deep --strict /tmp/deskflow-dmg/Deskflow.app
           /tmp/deskflow-dmg/Deskflow.app/Contents/MacOS/deskflow-core --version
-          QT_QPA_PLATFORM=offscreen /tmp/deskflow-dmg/Deskflow.app/Contents/MacOS/Deskflow --version
+          /tmp/deskflow-dmg/Deskflow.app/Contents/MacOS/Deskflow --version
           if find /tmp/deskflow-dmg/Deskflow.app -type f -perm +111 -exec otool -L {} \; 2>/dev/null | grep -E '^\s+(/opt/homebrew|/usr/local/opt|/Users/runner)'; then
             echo 'Package still depends on build-machine libraries' >&2
             exit 1

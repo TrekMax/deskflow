@@ -42,7 +42,7 @@ add_executable(${target} WIN32 MACOSX_BUNDLE
 )
 
 target_link_libraries(
-  ${target}
+  ${target} PRIVATE
   gui
   common
   Qt6::Core

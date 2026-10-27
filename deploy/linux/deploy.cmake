@@ -40,8 +40,32 @@ set(CPACK_RPM_PACKAGE_LICENSE "GPLv2")
 set(CPACK_RPM_PACKAGE_GROUP "Applications/System")
 
 if(BUNDLE_LINUX_RUNTIME)
+  find_package(Qt6 ${REQUIRED_QT_VERSION} REQUIRED COMPONENTS WaylandClient)
   foreach(app IN ITEMS deskflow deskflow-core)
-    qt6_generate_deploy_app_script(TARGET ${app} OUTPUT_SCRIPT deploy_script)
+    qt6_import_plugins(${app}
+      INCLUDE Qt6::QWaylandXdgShellIntegrationPlugin Qt6::QWaylandEglClientBufferPlugin
+      INCLUDE_BY_TYPE platforms
+        Qt6::QXcbIntegrationPlugin Qt6::QWaylandIntegrationPlugin
+        Qt6::QWaylandEglPlatformIntegrationPlugin Qt6::QOffscreenIntegrationPlugin
+      EXCLUDE_BY_TYPE egldeviceintegrations
+    )
+    # These targets use add_executable, so explicitly finalize Qt's plugin list.
+    qt6_finalize_target(${app})
+    qt6_generate_deploy_script(TARGET ${app} OUTPUT_SCRIPT deploy_script CONTENT "
+      # Qt 6.8's plugin RPATH adjustment does not account for CPack's DESTDIR.
+      set(saved_prefix \"\${CMAKE_INSTALL_PREFIX}\")
+      set(saved_destdir \"\$ENV{DESTDIR}\")
+      set(CMAKE_INSTALL_PREFIX \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}\")
+      set(ENV{DESTDIR} \"\")
+      set(QT_DEPLOY_TRANSLATIONS_DIR lib/deskflow/bin/translations)
+      qt6_deploy_runtime_dependencies(
+        EXECUTABLE $<TARGET_FILE:${app}>
+        GENERATE_QT_CONF
+        PLUGINS_DIR lib/deskflow/plugins
+      )
+      set(CMAKE_INSTALL_PREFIX \"\${saved_prefix}\")
+      set(ENV{DESTDIR} \"\${saved_destdir}\")
+    ")
     install(SCRIPT ${deploy_script})
     install(CODE "
       file(MAKE_DIRECTORY \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin\")

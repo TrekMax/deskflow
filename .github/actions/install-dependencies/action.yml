@@ -44,9 +44,10 @@ runs:
             if [ "${{inputs.like}}" == "ubuntu-24.04" ]; then
               sudo apt-get update -qq
               sudo apt-get install -y build-essential cmake ninja-build pkg-config \
-                python3-jinja2 python3-attr meson patchelf dpkg-dev curl \
+                python3-jinja2 python3-attr meson patchelf dpkg-dev curl file \
                 xorg-dev libssl-dev libxkbfile-dev libxkbregistry-dev libxkbcommon-dev \
                 libxkbcommon-x11-dev libglib2.0-dev libxcb-cursor-dev \
+                libxcb-icccm4-dev libxcb-keysyms1-dev libxcb-shape0-dev \
                 libgl1-mesa-dev libegl1-mesa-dev libwayland-dev libfontconfig1-dev \
                 libfreetype-dev libdbus-1-dev libice-dev libsm-dev
             elif [ "${{inputs.like}}" == "debian" ]; then
@@ -88,7 +89,6 @@ runs:
         version: ${{inputs.qt-version}}
         host: ${{inputs.qt-host}}
         arch: ${{inputs.qt-arch}}
-        modules: qtsvg
         install-deps: false
         cache: true
         cache-key-prefix: qt-${{runner.os}}-${{runner.arch}}-${{inputs.qt-version}}-${{inputs.qt-arch}}

@@ -57,7 +57,7 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/.git)
       ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE
     )
     execute_process(
-      COMMAND ${GIT_EXECUTABLE} describe --long --match v* --always
+      COMMAND ${GIT_EXECUTABLE} describe --tags --long --match v[0-9]* --always
       WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
       OUTPUT_VARIABLE GITREV
       ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -181,8 +181,6 @@ if(BUNDLE_LINUX_RUNTIME)
   set(CMAKE_INSTALL_BINDIR "lib/deskflow/bin")
   set(CMAKE_INSTALL_LIBDIR "lib/deskflow/lib")
   set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
-  set(QT_DEPLOY_PLUGINS_DIR "lib/deskflow/plugins")
-  set(QT_DEPLOY_TRANSLATIONS_DIR "lib/deskflow/bin/translations")
 endif()
 find_package(Qt6 ${REQUIRED_QT_VERSION} REQUIRED COMPONENTS Core Widgets Network)
 if(UNIX AND NOT APPLE)

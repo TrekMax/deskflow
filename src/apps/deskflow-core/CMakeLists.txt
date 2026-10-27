@@ -26,7 +26,7 @@ if(WIN32)
 endif()
 
 target_link_libraries(
-  ${target}
+  ${target} PRIVATE
   arch
   base
   client

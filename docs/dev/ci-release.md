@@ -9,12 +9,14 @@ pushes to `master`, version tags and manual dispatches:
 | Ubuntu 24.04 ARM64 | ubuntu-24.04-arm | 6.8.3 | DEB |
 | Windows x64 | windows-2022 | 6.12.0 | MSI, portable ZIP |
 | Windows ARM64 | windows-11-arm | 6.12.0 | MSI, portable ZIP |
-| macOS Intel | macos-15-intel | 6.9.3 | DMG, macOS 12+ |
-| macOS ARM64 | macos-15 | 6.12.0 | DMG, macOS 14.4+ |
+| macOS Intel | macos-15-intel | 6.9.3 | DMG, macOS 15+ |
+| macOS ARM64 | macos-15 | 6.12.0 | DMG, macOS 15+ |
 
 Qt SDK versions and the Windows vcpkg revision are pinned. Ubuntu's libei 1.3.0
 and libportal 0.9.1 sources are verified against SHA256 digests. Runner images,
 Homebrew and Ubuntu security updates can still change independently.
+The macOS deployment target is 15.0 to match the Homebrew OpenSSL static
+libraries on the macOS 15 runners, including their minimum system version.
 
 ## Ubuntu packages
 

@@ -10,6 +10,8 @@
 
 #include "base/EventQueue.h"
 
+#include <QScopeGuard>
+
 #define SHIFT_ID_L kKeyShift_L
 #define SHIFT_ID_R kKeyShift_R
 #define SHIFT_BUTTON 57
@@ -61,18 +63,23 @@ void OSXKeyStateTests::fakePollShift()
   EventQueue eventQueue;
   OSXKeyState keyState(&eventQueue, keyMap, {"en"}, true);
   keyState.updateKeyMap();
+  const auto releaseKeys = qScopeGuard([&keyState] {
+    keyState.fakeKeyUp(1);
+    keyState.fakeKeyUp(2);
+  });
 
+  // Posted HID events are asynchronous; wait for the observed state change.
   keyState.fakeKeyDown(SHIFT_ID_L, 0, 1, "en");
-  QVERIFY(isKeyPressed(keyState, SHIFT_BUTTON));
+  QTRY_VERIFY(isKeyPressed(keyState, SHIFT_BUTTON));
 
   keyState.fakeKeyUp(1);
-  QVERIFY(!isKeyPressed(keyState, SHIFT_BUTTON));
+  QTRY_VERIFY(!isKeyPressed(keyState, SHIFT_BUTTON));
 
   keyState.fakeKeyDown(SHIFT_ID_R, 0, 2, "en");
-  QVERIFY(isKeyPressed(keyState, SHIFT_BUTTON));
+  QTRY_VERIFY(isKeyPressed(keyState, SHIFT_BUTTON));
 
   keyState.fakeKeyUp(2);
-  QVERIFY(!isKeyPressed(keyState, SHIFT_BUTTON));
+  QTRY_VERIFY(!isKeyPressed(keyState, SHIFT_BUTTON));
 }
 
 void OSXKeyStateTests::fakePollChar()
@@ -81,12 +88,13 @@ void OSXKeyStateTests::fakePollChar()
   EventQueue eventQueue;
   OSXKeyState keyState(&eventQueue, keyMap, {"en"}, true);
   keyState.updateKeyMap();
+  const auto releaseKey = qScopeGuard([&keyState] { keyState.fakeKeyUp(1); });
 
   keyState.fakeKeyDown(A_CHAR_ID, 0, 1, "en");
-  QVERIFY(isKeyPressed(keyState, A_CHAR_BUTTON));
+  QTRY_VERIFY(isKeyPressed(keyState, A_CHAR_BUTTON));
 
   keyState.fakeKeyUp(1);
-  QVERIFY(!isKeyPressed(keyState, A_CHAR_BUTTON));
+  QTRY_VERIFY(!isKeyPressed(keyState, A_CHAR_BUTTON));
 
   // HACK: delete the key in case it was typed into a text editor.
   // we should really set focus to an invisible window.
@@ -100,12 +108,13 @@ void OSXKeyStateTests::fakePollCharWithModifier()
   EventQueue eventQueue;
   OSXKeyState keyState(&eventQueue, keyMap, {"en"}, true);
   keyState.updateKeyMap();
+  const auto releaseKey = qScopeGuard([&keyState] { keyState.fakeKeyUp(1); });
 
   keyState.fakeKeyDown(A_CHAR_ID, KeyModifierShift, 1, "en");
-  QVERIFY(isKeyPressed(keyState, A_CHAR_BUTTON));
+  QTRY_VERIFY(isKeyPressed(keyState, A_CHAR_BUTTON));
 
   keyState.fakeKeyUp(1);
-  QVERIFY(!isKeyPressed(keyState, A_CHAR_BUTTON));
+  QTRY_VERIFY(!isKeyPressed(keyState, A_CHAR_BUTTON));
 
   // HACK: delete the key in case it was typed into a text editor.
   // we should really set focus to an invisible window.
@@ -115,9 +124,6 @@ void OSXKeyStateTests::fakePollCharWithModifier()
 
 bool OSXKeyStateTests::isKeyPressed(const OSXKeyState &keyState, KeyButton button)
 {
-  // HACK: allow os to realize key state changes.
-  Arch::sleep(.2);
-
   IKeyState::KeyButtonSet pressed;
   keyState.pollPressedKeys(pressed);
 

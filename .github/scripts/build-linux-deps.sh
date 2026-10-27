@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# Meson and its Python modules come from apt, while the Qt action adds a
+# separate Python to PATH. Keep dependency generation on Ubuntu's interpreter.
+export PATH="/usr/bin:/bin:$PATH"
 
 root=$(pwd)
 prefix="$root/deps/prefix"

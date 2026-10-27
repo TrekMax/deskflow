@@ -7,6 +7,8 @@ docker run --rm -i -v "$package_dir:/packages:ro" \
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 apt-get install -y /packages/deskflow-*.deb xvfb xauth file
+test -f /usr/lib/deskflow/plugins/platforms/libqwayland-generic.so
+test -f /usr/lib/deskflow/plugins/wayland-shell-integration/libxdg-shell.so
 # Test all installed plugins too, including Wayland plugins not used by Xvfb.
 while IFS= read -r -d '' binary; do
   if file "$binary" | grep -q ELF; then

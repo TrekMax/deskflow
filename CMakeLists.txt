@@ -186,6 +186,9 @@ find_package(Qt6 ${REQUIRED_QT_VERSION} REQUIRED COMPONENTS Core Widgets Network
 if(UNIX AND NOT APPLE)
     find_package(Qt6 ${REQUIRED_QT_VERSION} REQUIRED COMPONENTS DBus)
 endif()
+if(BUNDLE_LINUX_RUNTIME)
+  find_package(Qt6 ${REQUIRED_QT_VERSION} REQUIRED COMPONENTS WaylandClient)
+endif()
 
 # Define the location of Qt deployment tool
 if(WIN32)

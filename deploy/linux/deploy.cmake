@@ -40,10 +40,13 @@ set(CPACK_RPM_PACKAGE_LICENSE "GPLv2")
 set(CPACK_RPM_PACKAGE_GROUP "Applications/System")
 
 if(BUNDLE_LINUX_RUNTIME)
-  find_package(Qt6 ${REQUIRED_QT_VERSION} REQUIRED COMPONENTS WaylandClient)
   foreach(app IN ITEMS deskflow deskflow-core)
+    # Include WaylandClient in Qt's deployment graph so its shell/buffer plugins
+    # are deployed along with the GUI platform plugins.
+    target_link_libraries(${app} PRIVATE Qt6::WaylandClient)
     qt6_import_plugins(${app}
-      INCLUDE Qt6::QWaylandXdgShellIntegrationPlugin Qt6::QWaylandEglClientBufferPlugin
+      INCLUDE_BY_TYPE wayland-shell-integration Qt6::QWaylandXdgShellIntegrationPlugin
+      INCLUDE_BY_TYPE wayland-graphics-integration-client Qt6::QWaylandEglClientBufferPlugin
       INCLUDE_BY_TYPE platforms
         Qt6::QXcbIntegrationPlugin Qt6::QWaylandIntegrationPlugin
         Qt6::QWaylandEglPlatformIntegrationPlugin Qt6::QOffscreenIntegrationPlugin

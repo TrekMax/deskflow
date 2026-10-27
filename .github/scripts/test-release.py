@@ -75,6 +75,9 @@ class ReleaseTests(unittest.TestCase):
         self.run_script("prepare-release.py", "dist")
         rows = (self.root / "dist/SHA256SUMS").read_text().splitlines()
         self.assertEqual(len(rows), 8)
+        notes = (self.root / "dist/release-notes.md").read_text(encoding="utf-8")
+        self.assertIn("构建提交", notes)
+        self.assertIn("临时签名", notes)
         for row in rows:
             digest, name = row.split("  ")
             self.assertEqual(digest, hashlib.sha256((self.root / "dist" / name).read_bytes()).hexdigest())
@@ -120,6 +123,7 @@ if args[0] == 'api' and 'matching-refs' in args[1] and os.environ.get('EXISTING'
         release_calls = [call for call in calls if call[0] == "release"]
         self.assertEqual([call[1] for call in release_calls], ["create", "upload", "edit"])
         self.assertIn("--draft", release_calls[0])
+        self.assertIn("Deskflow 持续构建版", release_calls[0])
         self.assertIn("--latest=false", release_calls[-1])
         self.env["EXISTING"] = "1"
         (self.root / "gh.log").write_text("")

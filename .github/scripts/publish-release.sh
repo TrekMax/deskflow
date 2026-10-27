@@ -16,7 +16,14 @@ if [[ "$tag" == continuous ]]; then
 else
   test "$(git rev-list -n 1 "$tag")" = "$sha"
 fi
-flags=(--title "Deskflow $DESKFLOW_PACKAGE_VERSION" --notes-file release-notes.md)
+if [[ "$tag" == continuous ]]; then
+  title="Deskflow 持续构建版"
+elif [[ "$DESKFLOW_PRERELEASE" == true ]]; then
+  title="Deskflow $DESKFLOW_PACKAGE_VERSION 预发布版"
+else
+  title="Deskflow $DESKFLOW_PACKAGE_VERSION 正式版"
+fi
+flags=(--title "$title" --notes-file release-notes.md)
 if [[ "$DESKFLOW_PRERELEASE" == true ]]; then
   flags+=(--prerelease --latest=false)
 else

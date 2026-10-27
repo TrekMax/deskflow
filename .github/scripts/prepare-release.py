@@ -41,11 +41,20 @@ for name in sorted(source.name for source in assets):
 (root / "SHA256SUMS").write_text("".join(checksums), encoding="utf-8")
 sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
 (root / "release-notes.md").write_text(
-    f"Build commit: `{sha}`\n\n"
-    "Ubuntu packages target Ubuntu 24.04 and bundle Qt, libei and libportal in a private directory.\n\n"
-    "macOS packages use ad-hoc signing and are not notarized. Gatekeeper may require explicit approval.\n\n"
-    "Windows packages are not Authenticode-signed.\n\n"
-    "Verify downloaded packages with `sha256sum -c SHA256SUMS`.\n",
+    f"版本：`{label}`，构建提交：`{sha}`。\n\n"
+    "提供 Ubuntu、Windows 和 macOS 的 x86_64 / ARM64 原生构建。\n\n"
+    "| 平台 | 架构 | 下载格式 |\n"
+    "| --- | --- | --- |\n"
+    "| Ubuntu 24.04 | x86_64、ARM64 | `.deb` |\n"
+    "| Windows | x64、ARM64 | `.msi` 安装包、`.zip` 便携包 |\n"
+    "| macOS 12 及以上 | Intel | `.dmg` |\n"
+    "| macOS 14.4 及以上 | Apple Silicon | `.dmg` |\n\n"
+    "Ubuntu 安装包已在私有目录中包含所需的 Qt、libei 和 libportal。"
+    "下载后可使用 `sudo apt install ./deskflow-*.deb` 安装对应架构的包。\n\n"
+    "macOS 安装包使用临时签名（ad-hoc），尚未经过 Apple 公证，"
+    "首次打开时系统可能要求手动确认。Windows 安装包尚未进行 Authenticode 代码签名。\n\n"
+    "下载对应平台的安装包及 `SHA256SUMS` 后，可在 Linux 中运行 "
+    "`sha256sum --ignore-missing -c SHA256SUMS` 验证已下载文件的完整性。\n",
     encoding="utf-8",
 )
 print(f"Validated {len(expected)} targets and {len(assets)} release packages")

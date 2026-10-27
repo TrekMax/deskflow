@@ -103,7 +103,7 @@ runs:
         extra-args: --classic --host-triplet=${{inputs.vcpkg-triplet}}
         triplet: ${{inputs.vcpkg-triplet}}
         token: ${{ github.token }}
-        revision: d5ec528843d29e3a52d745a64b469f810b2cedbf
+        revision: 9eec002df1cd109f8f104cd966a763daf9751489 # 2026.10.16
 
     - name: Cache Ubuntu dependencies
       if: inputs.like == 'ubuntu-24.04'

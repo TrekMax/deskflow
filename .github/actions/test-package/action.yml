@@ -23,7 +23,7 @@ runs:
         if [ "$RUNNER_OS" == "macOS" ]; then
           dmg=$(ls build/deskflow-*.dmg | head -1)
           echo "Y" | hdiutil attach "$dmg" -nobrowse -mountpoint /tmp/deskflow-dmg
-          trap 'hdiutil detach /tmp/deskflow-dmg' EXIT
+          trap 'bash .github/scripts/hdiutil-retry.sh detach /tmp/deskflow-dmg' EXIT
           unset QT_PLUGIN_PATH QML2_IMPORT_PATH DYLD_LIBRARY_PATH DYLD_FRAMEWORK_PATH
           codesign --verify --deep --strict /tmp/deskflow-dmg/Deskflow.app
           /tmp/deskflow-dmg/Deskflow.app/Contents/MacOS/deskflow-core --version

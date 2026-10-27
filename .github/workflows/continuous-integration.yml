@@ -103,6 +103,9 @@ jobs:
         run: |
           read -r -a config_args <<< "$EXTRA_CONFIG"
           read -r -a vcpkg_args <<< "$VCPKG_CONFIG"
+          if [[ "$RUNNER_OS" == macOS ]]; then
+            config_args+=("-DCPACK_COMMAND_HDIUTIL=$GITHUB_WORKSPACE/.github/scripts/hdiutil-retry.sh")
+          fi
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
             -DSKIP_BUILD_TESTS=ON -DBUILD_TESTS=ON \
             -DCMAKE_COMPILE_WARNING_AS_ERROR=ON \

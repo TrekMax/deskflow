@@ -44,6 +44,8 @@ vcpkg directories on PATH.
 
 ## Release behavior
 
+- Release titles and notes are generated in Chinese, including installation,
+  signing and checksum instructions.
 - Pull requests and manual runs only upload Actions artifacts.
 - A successful push to `master` creates or updates the `continuous` prerelease.
 - A tag such as `v1.28.0` publishes a stable release and marks it latest.

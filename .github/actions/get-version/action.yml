@@ -1,15 +1,12 @@
-name: "Get version"
-description: "Gets the version number from GitHub environment"
-
+name: Get version
+description: Resolve package and release versions from tags or the current commit
 runs:
-  using: "composite"
-
+  using: composite
   steps:
     - run: |
-        echo "DESKFLOW_VERSION=$(git describe --long | sed 's/-/./g;s/v//g'  | grep -o '^[0-9]*.[0-9]*.[0-9]*.[0-9]*')">> $GITHUB_ENV
-        if [[ "$GITHUB_REF" == *"tags/v"* ]]; then
-          echo "DESKFLOW_PACKAGE_VERSION=$(echo $GITHUB_REF | sed 's,refs/tags/v,,g')">> $GITHUB_ENV
+        if [[ "$RUNNER_OS" == Windows ]]; then
+          python .github/scripts/version.py
         else
-          echo "DESKFLOW_PACKAGE_VERSION=continuous">> $GITHUB_ENV
+          python3 .github/scripts/version.py
         fi
       shell: bash

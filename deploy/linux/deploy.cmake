@@ -39,6 +39,24 @@ set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "qt6-svg-plugins")
 set(CPACK_RPM_PACKAGE_LICENSE "GPLv2")
 set(CPACK_RPM_PACKAGE_GROUP "Applications/System")
 
+if(BUNDLE_LINUX_RUNTIME)
+  foreach(app IN ITEMS deskflow deskflow-core)
+    qt6_generate_deploy_app_script(TARGET ${app} OUTPUT_SCRIPT deploy_script)
+    install(SCRIPT ${deploy_script})
+    install(CODE "
+      file(MAKE_DIRECTORY \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin\")
+      file(CREATE_LINK \"../lib/deskflow/bin/${app}\"
+        \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin/${app}\" SYMBOLIC)
+    ")
+  endforeach()
+  # SVG support comes from the bundled Qt plugins, not the distro's older Qt.
+  unset(CPACK_DEBIAN_PACKAGE_RECOMMENDS)
+  find_path(BUNDLED_DEPENDENCY_LICENSES libei.txt
+    PATH_SUFFIXES share/licenses/deskflow-dependencies REQUIRED)
+  install(DIRECTORY "${BUNDLED_DEPENDENCY_LICENSES}/"
+    DESTINATION "${CMAKE_INSTALL_LICENSE_DIR}/dependencies")
+endif()
+
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   # Get Distro name information
   if(EXISTS "/etc/os-release")

@@ -11,25 +11,33 @@ runs:
   using: "composite"
 
   steps:
+    - name: Test Windows ZIP and MSI
+      if: runner.os == 'Windows'
+      run: ./.github/scripts/test-windows-package.ps1
+      shell: pwsh
+
     - name: Test package
+      if: runner.os != 'Windows'
       shell: bash
       run: |
         if [ "$RUNNER_OS" == "macOS" ]; then
           dmg=$(ls build/deskflow-*.dmg | head -1)
           echo "Y" | hdiutil attach "$dmg" -nobrowse -mountpoint /tmp/deskflow-dmg
+          trap 'hdiutil detach /tmp/deskflow-dmg' EXIT
+          unset QT_PLUGIN_PATH QML2_IMPORT_PATH DYLD_LIBRARY_PATH DYLD_FRAMEWORK_PATH
+          codesign --verify --deep --strict /tmp/deskflow-dmg/Deskflow.app
           /tmp/deskflow-dmg/Deskflow.app/Contents/MacOS/deskflow-core --version
-          hdiutil detach /tmp/deskflow-dmg
-
-        elif [ "$RUNNER_OS" == "Windows" ]; then
-          7z x build/deskflow-*-portable.zip -otmp/deskflow-pkg
-          exe=$(find tmp/deskflow-pkg -name "deskflow-core.exe" -type f | head -1)
-          exe_dir=$(dirname "$exe")
-          pkg_root=$(dirname "$exe_dir")
-          export PATH="$exe_dir:$pkg_root:$pkg_root/lib:$PATH"
-          "$exe" --version
+          QT_QPA_PLATFORM=offscreen /tmp/deskflow-dmg/Deskflow.app/Contents/MacOS/Deskflow --version
+          if find /tmp/deskflow-dmg/Deskflow.app -type f -perm +111 -exec otool -L {} \; 2>/dev/null | grep -E '^\s+(/opt/homebrew|/usr/local/opt|/Users/runner)'; then
+            echo 'Package still depends on build-machine libraries' >&2
+            exit 1
+          fi
 
         elif [ "$RUNNER_OS" == "Linux" ]; then
-          if [ "${{inputs.like}}" == "debian" ]; then
+          if [ "${{inputs.like}}" == "ubuntu-24.04" ]; then
+            bash .github/scripts/test-linux-package.sh build
+            exit 0
+          elif [ "${{inputs.like}}" == "debian" ]; then
             apt-get install -y ./build/deskflow-*.deb
           elif [ "${{inputs.like}}" == "fedora" ]; then
             dnf install -y build/deskflow-*.rpm

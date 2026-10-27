@@ -11,7 +11,15 @@ inputs:
     required: false
 
   qt-version:
-    description: "The version of Qt to install (Windows & macOS)"
+    description: "Exact version of the Qt SDK"
+    required: false
+
+  qt-host:
+    description: "Qt download host"
+    required: false
+
+  qt-arch:
+    description: "Qt SDK architecture"
     required: false
 
   vcpkg-triplet:
@@ -33,7 +41,15 @@ runs:
           if [ "$RUNNER_OS" == "macOS" ]; then
             brew install openssl --quiet
           elif [ "$RUNNER_OS" == "Linux" ]; then
-            if [ ${{inputs.like}} == "debian" ]; then
+            if [ "${{inputs.like}}" == "ubuntu-24.04" ]; then
+              sudo apt-get update -qq
+              sudo apt-get install -y build-essential cmake ninja-build pkg-config \
+                python3-jinja2 python3-attr meson patchelf dpkg-dev curl \
+                xorg-dev libssl-dev libxkbfile-dev libxkbregistry-dev libxkbcommon-dev \
+                libxkbcommon-x11-dev libglib2.0-dev libxcb-cursor-dev \
+                libgl1-mesa-dev libegl1-mesa-dev libwayland-dev libfontconfig1-dev \
+                libfreetype-dev libdbus-1-dev libice-dev libsm-dev
+            elif [ "${{inputs.like}}" == "debian" ]; then
               apt update -qqq > /dev/null
               apt install -qqq cmake build-essential ninja-build \
                 xorg-dev libx11-dev libxtst-dev libssl-dev libxkbfile-dev \
@@ -64,14 +80,18 @@ runs:
       shell: bash
 
     - name: Install Qt
-      if: ${{runner.os != 'Linux' }}
+      if: runner.os != 'Linux' || inputs.like == 'ubuntu-24.04'
       uses: jurplel/install-qt-action@v4
       env:
         AQT_CONFIG: ${{ github.workspace }}/.github/actions/install-dependencies/aqt.ini
       with:
         version: ${{inputs.qt-version}}
+        host: ${{inputs.qt-host}}
+        arch: ${{inputs.qt-arch}}
+        modules: qtsvg
+        install-deps: false
         cache: true
-        cache-key-prefix: ${{matrix.target.os}}-${{inputs.qt-version}}
+        cache-key-prefix: qt-${{runner.os}}-${{runner.arch}}-${{inputs.qt-version}}-${{inputs.qt-arch}}
         aqtsource: git+https://github.com/miurahr/aqtinstall.git@16db45a70b5905ad596941b223469bc86a56901e
 
     - name: Build and cache vcpkg
@@ -83,7 +103,27 @@ runs:
         extra-args: --classic --host-triplet=${{inputs.vcpkg-triplet}}
         triplet: ${{inputs.vcpkg-triplet}}
         token: ${{ github.token }}
-        revision: master
+        revision: d5ec528843d29e3a52d745a64b469f810b2cedbf
+
+    - name: Cache Ubuntu dependencies
+      if: inputs.like == 'ubuntu-24.04'
+      id: ubuntu-cache
+      uses: actions/cache@v4
+      with:
+        path: deps/prefix
+        key: noble-deps-${{runner.arch}}-${{hashFiles('.github/scripts/build-linux-deps.sh')}}
+
+    - name: Build Ubuntu dependencies
+      if: inputs.like == 'ubuntu-24.04' && steps.ubuntu-cache.outputs.cache-hit != 'true'
+      run: bash .github/scripts/build-linux-deps.sh
+      shell: bash
+
+    - name: Configure Ubuntu dependency paths
+      if: inputs.like == 'ubuntu-24.04'
+      run: |
+        echo "PKG_CONFIG_PATH=$GITHUB_WORKSPACE/deps/prefix/lib/pkgconfig:${PKG_CONFIG_PATH:-}" >> "$GITHUB_ENV"
+        echo "CMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/deps/prefix:${CMAKE_PREFIX_PATH:-}" >> "$GITHUB_ENV"
+      shell: bash
 
     - name: Install Wix
       if: ${{ runner.os == 'Windows' }}

@@ -53,7 +53,9 @@ sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
     "Windows MSI 安装包需要安装对应架构的最新 "
     "[Microsoft Visual C++ v14 运行库](https://learn.microsoft.com/zh-cn/cpp/windows/latest-supported-vc-redist)。"
     "ZIP 便携包已包含运行库，但不包含系统服务，因此无法在 UAC 提示或登录界面共享输入。\n\n"
-    "macOS 安装包使用临时签名（ad-hoc），尚未经过 Apple 公证，"
+    "macOS 已修复临时签名与 Hardened Runtime 冲突导致的 Qt framework 加载崩溃。"
+    "如果安装过旧版，请退出应用后用本次下载的 `Deskflow.app` 替换旧应用。\n\n"
+    "macOS 安装包使用临时签名（ad-hoc），不启用 Hardened Runtime，尚未经过 Apple 公证，"
     "首次打开时系统可能要求手动确认。Windows 安装包尚未进行 Authenticode 代码签名。\n\n"
     "下载对应平台的安装包及 `SHA256SUMS` 后，可在 Linux 中运行 "
     "`sha256sum --ignore-missing -c SHA256SUMS` 验证已下载文件的完整性。\n",

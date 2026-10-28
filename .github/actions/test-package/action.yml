@@ -21,17 +21,7 @@ runs:
       shell: bash
       run: |
         if [ "$RUNNER_OS" == "macOS" ]; then
-          dmg=$(ls build/deskflow-*.dmg | head -1)
-          echo "Y" | hdiutil attach "$dmg" -nobrowse -mountpoint /tmp/deskflow-dmg
-          trap 'bash .github/scripts/hdiutil-retry.sh detach /tmp/deskflow-dmg' EXIT
-          unset QT_PLUGIN_PATH QML2_IMPORT_PATH DYLD_LIBRARY_PATH DYLD_FRAMEWORK_PATH
-          codesign --verify --deep --strict /tmp/deskflow-dmg/Deskflow.app
-          /tmp/deskflow-dmg/Deskflow.app/Contents/MacOS/deskflow-core --version
-          /tmp/deskflow-dmg/Deskflow.app/Contents/MacOS/Deskflow --version
-          if find /tmp/deskflow-dmg/Deskflow.app -type f -perm +111 -exec otool -L {} \; 2>/dev/null | grep -E '^\s+(/opt/homebrew|/usr/local/opt|/Users/runner)'; then
-            echo 'Package still depends on build-machine libraries' >&2
-            exit 1
-          fi
+          python3 .github/scripts/test-macos-package.py
 
         elif [ "$RUNNER_OS" == "Linux" ]; then
           if [ "${{inputs.like}}" == "ubuntu-24.04" ]; then

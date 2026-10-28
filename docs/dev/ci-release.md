@@ -35,10 +35,17 @@ Wayland compositor portal permissions.
 
 ## Signing
 
-macOS packages use the existing ad-hoc signing fallback and are not notarized.
+macOS packages use ad-hoc signing without Hardened Runtime and are not notarized.
+Ad-hoc signatures have no Team ID, so enabling Hardened Runtime's same-team
+library validation can prevent bundled Qt frameworks from loading on another Mac.
+Certificate signing retains Hardened Runtime and secure timestamps.
 No Apple certificate or notarization secrets are required. Gatekeeper can
 require explicit approval on the receiving Mac. Validation checks the app's
-signature and rejects links to Homebrew or runner-local libraries.
+signature and rejects links to Homebrew or runner-local libraries. It copies the
+app off the DMG, detaches the image, inspects every Mach-O architecture for an
+ad-hoc signature without runtime/library-validation flags, and launches through
+LaunchServices as well as directly. A disposable copy with the old runtime flag
+must fail the policy check even though its cryptographic signature is valid.
 
 Windows packages are not Authenticode-signed. CI validates both portable
 executables and MSI installation, execution and uninstallation, without Qt or

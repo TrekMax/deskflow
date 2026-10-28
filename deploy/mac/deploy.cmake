@@ -9,14 +9,17 @@ set(OSX_BUNDLE ${BUILD_OSX_BUNDLE})
 set(OS_STRING "macos-${BUILD_ARCHITECTURE}")
 
 if (OSX_BUNDLE)
-  set(_codesign_identity "-")
-  if (APPLE_CODESIGN_DEV)
-    set(_codesign_identity "${APPLE_CODESIGN_DEV}")
+  # Ad-hoc signatures have no Team ID and cannot satisfy Hardened Runtime's
+  # same-team library validation on a receiving Mac.
+  set(_codesign_options "-codesign=-")
+  if (APPLE_CODESIGN_DEV AND NOT APPLE_CODESIGN_DEV STREQUAL "-")
+    set(_codesign_options "-hardened-runtime -timestamp \"-codesign=${APPLE_CODESIGN_DEV}\"")
   endif()
   install(CODE "execute_process(COMMAND
-    ${DEPLOYQT}
+    \"${DEPLOYQT}\"
     \"\${CMAKE_INSTALL_PREFIX}/${CMAKE_PROJECT_PROPER_NAME}.app\"
-    -hardened-runtime -timestamp \"-codesign=${_codesign_identity}\"
+    ${_codesign_options}
+    COMMAND_ERROR_IS_FATAL ANY
   )")
   set(CPACK_PACKAGE_ICON "${MY_DIR}/dmg-volume.icns")
   set(CPACK_DMG_BACKGROUND_IMAGE "${MY_DIR}/dmg-background.tiff")
